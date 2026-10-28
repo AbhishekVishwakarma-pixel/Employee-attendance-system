@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees – Attendance Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+    <div th:replace="~{fragments :: sidebar('employees')}"></div>
+    <main class="main-content">
+        <header class="page-header flex-between">
+            <div>
+                <h1><i class="fas fa-users"></i> Employees</h1>
+                <p class="page-subtitle">Manage employee records</p>
+            </div>
+            <a th:href="@{/employees/new}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Employee</a>
+        </header>
+        <div th:replace="~{fragments :: alerts}"></div>
+
+        <div class="content-card search-card">
+            <form th:action="@{/employees}" method="get" class="search-form">
+                <div class="filter-row">
+                    <div class="filter-item" style="flex:2">
+                        <label>Search</label>
+                        <input type="text" name="keyword" th:value="${keyword}" placeholder="ID, name, department..." class="search-input">
+                    </div>
+                    <div class="filter-item">
+                        <label>Department</label>
+                        <select name="department" class="search-input">
+                            <option value="">All</option>
+                            <option th:each="d : ${departments}" th:value="${d}" th:text="${d}"
+                                    th:selected="${d == selectedDepartment}"></option>
+                        </select>
+                    </div>
+                    <div class="filter-item filter-btn">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a th:href="@{/employees}" class="btn btn-secondary">Clear</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-card">
+            <div th:if="${#lists.isEmpty(employees)}" class="empty-state">
+                <i class="fas fa-user-slash fa-2x"></i>
+                <h3>No employees found</h3>
+            </div>
+            <div th:unless="${#lists.isEmpty(employees)}" class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th><th>Name</th><th>Designation</th><th>Department</th>
+                        <th>Phone</th><th>Email</th><th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="emp : ${employees}">
+                        <td><strong th:text="${emp.employeeId}">EMP001</strong></td>
+                        <td th:text="${emp.fullName}">Name</td>
+                        <td th:text="${emp.designation != null ? emp.designation : '—'}">—</td>
+                        <td><span class="badge badge-dept" th:text="${emp.department}">IT</span></td>
+                        <td th:text="${emp.phone}">9876543210</td>
+                        <td th:text="${emp.email != null ? emp.email : '—'}">—</td>
+                        <td class="actions">
+                            <a th:href="@{/attendance/employee/{id}(id=${emp.employeeId})}" class="btn-icon btn-view" title="History"><i class="fas fa-chart-bar"></i></a>
+                            <a th:href="@{/employees/edit/{id}(id=${emp.employeeId})}" class="btn-icon btn-edit" title="Edit"><i class="fas fa-edit"></i></a>
+                            <a th:href="@{/employees/delete/{id}(id=${emp.employeeId})}" class="btn-icon btn-delete" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

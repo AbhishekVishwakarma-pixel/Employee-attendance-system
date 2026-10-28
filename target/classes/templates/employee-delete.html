@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Delete – Attendance System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+
+    <div th:replace="~{fragments :: sidebar('employees')}"></div>
+
+    <main class="main-content">
+        <header class="page-header">
+            <h1><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> Confirm Deletion</h1>
+            <p class="page-subtitle">This action cannot be undone</p>
+        </header>
+
+        <div class="content-card form-card delete-card">
+            <div class="delete-warning">
+                <i class="fas fa-user-times fa-3x"></i>
+                <h2>Delete this employee?</h2>
+                <p>All attendance records for this employee will also be removed.</p>
+            </div>
+
+            <div class="preview-box">
+                <div class="preview-row">
+                    <span class="label">Employee ID:</span>
+                    <span th:text="${employee.employeeId}">EMP001</span>
+                </div>
+                <div class="preview-row">
+                    <span class="label">Name:</span>
+                    <span th:text="${employee.fullName}">Name</span>
+                </div>
+                <div class="preview-row">
+                    <span class="label">Department:</span>
+                    <span th:text="${employee.department}">IT</span>
+                </div>
+                <div class="preview-row">
+                    <span class="label">Phone:</span>
+                    <span th:text="${employee.phone}">9876543210</span>
+                </div>
+            </div>
+
+            <form th:action="@{/employees/delete/{id}(id=${employee.employeeId})}" method="post" class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete
+                </button>
+                <a th:href="@{/employees}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

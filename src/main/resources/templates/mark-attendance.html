@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance – Attendance Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+    <div th:replace="~{fragments :: sidebar('mark')}"></div>
+    <main class="main-content">
+        <header class="page-header">
+            <h1><i class="fas fa-calendar-check"></i> Mark Attendance</h1>
+            <p class="page-subtitle">Select date, mark status and optional remarks</p>
+        </header>
+        <div th:replace="~{fragments :: alerts}"></div>
+
+        <div class="content-card search-card">
+            <form th:action="@{/attendance/mark}" method="get" class="search-form">
+                <div class="search-group">
+                    <label class="inline-label"><i class="fas fa-calendar"></i> Date:</label>
+                    <input type="date" name="date" th:value="${selectedDate}" class="search-input date-input">
+                    <button type="submit" class="btn btn-primary">Load</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-card">
+            <div th:if="${#lists.isEmpty(employees)}" class="empty-state">
+                <h3>No employees found</h3>
+                <a th:href="@{/employees/new}" class="btn btn-primary">Add Employee</a>
+            </div>
+
+            <form th:unless="${#lists.isEmpty(employees)}" th:action="@{/attendance/mark}" method="post">
+                <input type="hidden" name="date" th:value="${selectedDate}">
+                <div class="card-header">
+                    <h2>Employees – <span th:text="${selectedDate}"></span></h2>
+                    <div class="bulk-actions">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="markAll('Present')">All Present</button>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="markAll('Absent')">All Absent</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>#</th><th>ID</th><th>Name</th><th>Dept</th>
+                            <th>Current</th><th>Mark As</th><th>Remark</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="emp, stat : ${employees}">
+                            <td th:text="${stat.count}">1</td>
+                            <td>
+                                <strong th:text="${emp.employeeId}"></strong>
+                                <input type="hidden" name="employeeId" th:value="${emp.employeeId}">
+                            </td>
+                            <td th:text="${emp.fullName}"></td>
+                            <td th:text="${emp.department}"></td>
+                            <td>
+                                <span th:if="${statusMap.containsKey(emp.employeeId)}"
+                                      th:class="${statusMap.get(emp.employeeId) == 'Present'} ? 'badge badge-present' : 'badge badge-absent'"
+                                      th:text="${statusMap.get(emp.employeeId)}"></span>
+                                <span th:unless="${statusMap.containsKey(emp.employeeId)}" class="badge badge-none">Not Marked</span>
+                            </td>
+                            <td>
+                                <select name="status" class="status-select">
+                                    <option value="Present" th:selected="${statusMap.get(emp.employeeId) == 'Present'}">Present</option>
+                                    <option value="Absent" th:selected="${statusMap.get(emp.employeeId) == 'Absent'}">Absent</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="remark" class="remark-input"
+                                       th:value="${remarkMap.get(emp.employeeId)}"
+                                       placeholder="Optional note">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions" style="margin-top:20px">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Save Attendance
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/script.js}"></script>
+<script>
+function markAll(status) {
+    document.querySelectorAll('.status-select').forEach(s => s.value = status);
+}
+</script>
+</body>
+</html>

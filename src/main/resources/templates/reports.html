@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports – Attendance Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+    <div th:replace="~{fragments :: sidebar('reports')}"></div>
+    <main class="main-content">
+        <header class="page-header flex-between">
+            <div>
+                <h1><i class="fas fa-chart-pie"></i> Reports & Analytics</h1>
+                <p class="page-subtitle">Monthly summary and rankings</p>
+            </div>
+        </header>
+
+        <div class="content-card search-card">
+            <form th:action="@{/attendance/reports}" method="get" class="search-form">
+                <div class="search-group">
+                    <label class="inline-label">Month:</label>
+                    <input type="month" name="month" th:value="${monthStr}" class="search-input date-input">
+                    <button type="submit" class="btn btn-primary">Load</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="stat-cards compact-stats">
+            <div class="stat-card card-green">
+                <div class="stat-info">
+                    <span class="stat-label">Present (Month)</span>
+                    <span class="stat-value" th:text="${monthPresent}">0</span>
+                </div>
+            </div>
+            <div class="stat-card card-red">
+                <div class="stat-info">
+                    <span class="stat-label">Absent (Month)</span>
+                    <span class="stat-value" th:text="${monthAbsent}">0</span>
+                </div>
+            </div>
+            <div class="stat-card card-blue">
+                <div class="stat-info">
+                    <span class="stat-label">Total Records</span>
+                    <span class="stat-value" th:text="${monthRecords.size()}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="content-card">
+                <div class="card-header"><h2>Month – Present vs Absent</h2></div>
+                <div class="chart-wrap"><canvas id="monthChart" height="220"></canvas></div>
+            </div>
+            <div class="content-card">
+                <div class="card-header"><h2>Department Headcount</h2></div>
+                <div class="chart-wrap"><canvas id="deptReportChart" height="220"></canvas></div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header"><h2><i class="fas fa-trophy"></i> Employee Rankings (All Time)</h2></div>
+            <div th:if="${#lists.isEmpty(rankings)}" class="empty-state"><p>No data yet.</p></div>
+            <div th:unless="${#lists.isEmpty(rankings)}" class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr><th>Rank</th><th>Employee</th><th>Dept</th><th>Present</th><th>Absent</th><th>Total</th><th>%</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r, st : ${rankings}">
+                        <td>
+                            <span th:if="${st.count == 1}" class="rank-badge gold">1</span>
+                            <span th:if="${st.count == 2}" class="rank-badge silver">2</span>
+                            <span th:if="${st.count == 3}" class="rank-badge bronze">3</span>
+                            <span th:if="${st.count > 3}" th:text="${st.count}"></span>
+                        </td>
+                        <td>
+                            <strong th:text="${r.employeeName}"></strong><br>
+                            <small class="text-muted" th:text="${r.employeeId}"></small>
+                        </td>
+                        <td th:text="${r.department}"></td>
+                        <td th:text="${r.presentDays}"></td>
+                        <td th:text="${r.absentDays}"></td>
+                        <td th:text="${r.totalDays}"></td>
+                        <td><strong th:text="${r.percentage} + '%'"></strong></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header"><h2>Monthly Records – <span th:text="${month}"></span></h2></div>
+            <div th:if="${#lists.isEmpty(monthRecords)}" class="empty-state"><p>No records for this month.</p></div>
+            <div th:unless="${#lists.isEmpty(monthRecords)}" class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr><th>#</th><th>Date</th><th>ID</th><th>Name</th><th>Dept</th><th>Status</th><th>Remark</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="rec, stat : ${monthRecords}">
+                        <td th:text="${stat.count}"></td>
+                        <td th:text="${rec.date}"></td>
+                        <td th:text="${rec.employeeId}"></td>
+                        <td th:text="${rec.employeeName}"></td>
+                        <td th:text="${rec.department}"></td>
+                        <td>
+                            <span th:class="${rec.status == 'Present'} ? 'badge badge-present' : 'badge badge-absent'"
+                                  th:text="${rec.status}"></span>
+                        </td>
+                        <td th:text="${rec.remark != null ? rec.remark : '—'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:inline="javascript">
+    const mPresent = /*[[${monthPresent}]]*/ 0;
+    const mAbsent = /*[[${monthAbsent}]]*/ 0;
+    const dLabels = /*[[${deptCounts.keySet()}]]*/ [];
+    const dValues = /*[[${deptCounts.values()}]]*/ [];
+
+    new Chart(document.getElementById('monthChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{ data: [mPresent, mAbsent], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 0 }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '55%' }
+    });
+    new Chart(document.getElementById('deptReportChart'), {
+        type: 'bar',
+        data: {
+            labels: dLabels,
+            datasets: [{ label: 'Employees', data: dValues, backgroundColor: '#7c3aed', borderRadius: 6 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+</script>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${employee.fullName} + ' – History'">History</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="app-layout">
+    <div th:replace="~{fragments :: sidebar('history')}"></div>
+    <main class="main-content">
+        <header class="page-header flex-between">
+            <div>
+                <h1><i class="fas fa-chart-bar"></i> <span th:text="${employee.fullName}"></span></h1>
+                <p class="page-subtitle">
+                    <span th:text="${employee.employeeId}"></span> ·
+                    <span th:text="${employee.department}"></span>
+                    <span th:if="${employee.designation}"> · <span th:text="${employee.designation}"></span></span>
+                </p>
+            </div>
+            <a th:href="@{/attendance/history}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+        </header>
+
+        <div class="stat-cards compact-stats">
+            <div class="stat-card card-green"><div class="stat-info"><span class="stat-label">Present</span><span class="stat-value" th:text="${presentCount}">0</span></div></div>
+            <div class="stat-card card-red"><div class="stat-info"><span class="stat-label">Absent</span><span class="stat-value" th:text="${absentCount}">0</span></div></div>
+            <div class="stat-card card-purple"><div class="stat-info"><span class="stat-label">%</span><span class="stat-value"><span th:text="${percentage}">0</span>%</span></div></div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header"><h2>Attendance Records</h2></div>
+            <div th:if="${#lists.isEmpty(records)}" class="empty-state"><h3>No records</h3></div>
+            <div th:unless="${#lists.isEmpty(records)}" class="table-wrapper">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Date</th><th>Status</th><th>Remark</th></tr></thead>
+                    <tbody>
+                    <tr th:each="rec, stat : ${records}">
+                        <td th:text="${stat.count}"></td>
+                        <td th:text="${rec.date}"></td>
+                        <td>
+                            <span th:class="${rec.status == 'Present'} ? 'badge badge-present' : 'badge badge-absent'"
+                                  th:text="${rec.status}"></span>
+                        </td>
+                        <td th:text="${rec.remark != null ? rec.remark : '—'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"></head>
+<body>
+
+<aside th:fragment="sidebar(activePage)" class="sidebar">
+    <div class="sidebar-brand">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Attendance Pro</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active' : ''" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+        </a>
+        <a th:href="@{/employees}" th:classappend="${activePage == 'employees'} ? 'active' : ''" class="nav-link">
+            <i class="fas fa-users"></i> <span>Employees</span>
+        </a>
+        <a th:href="@{/attendance/mark}" th:classappend="${activePage == 'mark'} ? 'active' : ''" class="nav-link">
+            <i class="fas fa-calendar-check"></i> <span>Mark Attendance</span>
+        </a>
+        <a th:href="@{/attendance/history}" th:classappend="${activePage == 'history'} ? 'active' : ''" class="nav-link">
+            <i class="fas fa-history"></i> <span>History</span>
+        </a>
+        <a th:href="@{/attendance/reports}" th:classappend="${activePage == 'reports'} ? 'active' : ''" class="nav-link">
+            <i class="fas fa-chart-pie"></i> <span>Reports</span>
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <small>In-Memory Storage</small>
+        <small>College Project – Advanced</small>
+    </div>
+</aside>
+
+<div th:fragment="alerts">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${errorMessage}"></span>
+        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+</div>
+
+</body>
+</html>

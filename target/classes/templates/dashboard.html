@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – Attendance Pro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+    <div th:replace="~{fragments :: sidebar('dashboard')}"></div>
+    <main class="main-content">
+        <header class="page-header">
+            <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+            <p class="page-subtitle">Overview for <strong th:text="${today}">today</strong></p>
+        </header>
+        <div th:replace="~{fragments :: alerts}"></div>
+
+        <div class="stat-cards">
+            <div class="stat-card card-blue">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Total Employees</span>
+                    <span class="stat-value" th:text="${totalEmployees}">0</span>
+                </div>
+            </div>
+            <div class="stat-card card-green">
+                <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Present Today</span>
+                    <span class="stat-value" th:text="${presentToday}">0</span>
+                </div>
+            </div>
+            <div class="stat-card card-red">
+                <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Absent Today</span>
+                    <span class="stat-value" th:text="${absentToday}">0</span>
+                </div>
+            </div>
+            <div class="stat-card card-purple">
+                <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Attendance %</span>
+                    <span class="stat-value"><span th:text="${percentage}">0</span>%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="content-card">
+                <div class="card-header"><h2><i class="fas fa-chart-pie"></i> Today – Present vs Absent</h2></div>
+                <div class="chart-wrap"><canvas id="todayChart" height="220"></canvas></div>
+            </div>
+            <div class="content-card">
+                <div class="card-header"><h2><i class="fas fa-building"></i> Employees by Department</h2></div>
+                <div class="chart-wrap"><canvas id="deptChart" height="220"></canvas></div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2><i class="fas fa-trophy"></i> Attendance Rankings</h2>
+                <a th:href="@{/attendance/reports}" class="btn btn-sm btn-outline">Full Report</a>
+            </div>
+            <div th:if="${#lists.isEmpty(rankings)}" class="empty-state">
+                <p>No ranking data yet. Mark attendance first.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(rankings)}" class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>Rank</th><th>Employee</th><th>Department</th>
+                        <th>Present</th><th>Absent</th><th>Total</th><th>%</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r, st : ${rankings}">
+                        <td>
+                            <span th:if="${st.count == 1}" class="rank-badge gold">1</span>
+                            <span th:if="${st.count == 2}" class="rank-badge silver">2</span>
+                            <span th:if="${st.count == 3}" class="rank-badge bronze">3</span>
+                            <span th:if="${st.count > 3}" th:text="${st.count}"></span>
+                        </td>
+                        <td>
+                            <strong th:text="${r.employeeName}">Name</strong><br>
+                            <small class="text-muted" th:text="${r.employeeId}">ID</small>
+                        </td>
+                        <td th:text="${r.department}">Dept</td>
+                        <td th:text="${r.presentDays}">0</td>
+                        <td th:text="${r.absentDays}">0</td>
+                        <td th:text="${r.totalDays}">0</td>
+                        <td><strong th:text="${r.percentage} + '%'">0%</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2><i class="fas fa-clock"></i> Recent Records</h2>
+                <a th:href="@{/attendance/history}" class="btn btn-sm btn-outline">View All</a>
+            </div>
+            <div th:if="${#lists.isEmpty(recentRecords)}" class="empty-state">
+                <p>No attendance records yet.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(recentRecords)}" class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                    <tr><th>ID</th><th>Name</th><th>Dept</th><th>Date</th><th>Status</th><th>Remark</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="rec : ${recentRecords}">
+                        <td th:text="${rec.employeeId}">EMP001</td>
+                        <td th:text="${rec.employeeName}">Name</td>
+                        <td th:text="${rec.department}">IT</td>
+                        <td th:text="${rec.date}">2025-01-01</td>
+                        <td>
+                            <span th:class="${rec.status == 'Present'} ? 'badge badge-present' : 'badge badge-absent'"
+                                  th:text="${rec.status}">Present</span>
+                        </td>
+                        <td th:text="${rec.remark != null ? rec.remark : '—'}">—</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    const present = /*[[${presentToday}]]*/ 0;
+    const absent = /*[[${absentToday}]]*/ 0;
+    const deptLabels = /*[[${deptCounts.keySet()}]]*/ [];
+    const deptValues = /*[[${deptCounts.values()}]]*/ [];
+
+    new Chart(document.getElementById('todayChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{ data: [present, absent], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 0 }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, cutout: '60%' }
+    });
+
+    new Chart(document.getElementById('deptChart'), {
+        type: 'bar',
+        data: {
+            labels: deptLabels,
+            datasets: [{ label: 'Employees', data: deptValues, backgroundColor: '#2563eb', borderRadius: 6 }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
